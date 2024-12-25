@@ -16,8 +16,13 @@
   </table>
 
   <script>
-    fetch('https://script.google.com/macros/s/AKfycbxmOM3I0CtfFCpdvHG6F8Kg3_Jm2QvVPb7ROL-pUiobLQsCyJaw3dMXjilZZmXlVlT9xw/exec')
-      .then(response => response.json())
+    fetch('https://script.google.com/macros/s/AKfycbzgKF_hy_5acIZHlMuV9ifQjU-E_v7sHZPOOKn-NxkUh-jaFlKiVmNe6BkkmB8ArxAFLA/exec')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(data => {
         var dataTable = document.getElementById('data-table');
         var tbody = dataTable.querySelector('tbody');
@@ -25,37 +30,36 @@
         data.forEach(function(item) {
           var row = document.createElement('tr');
 
+          // 日付セルの処理
           var dateCell = document.createElement('td');
-          // フォーマットを判定して正規化する関数
           function formatDate(inputDate) {
-              // YYYY/MM/DD フォーマットの場合はそのまま返す
               if (/^\d{4}\/\d{2}\/\d{2}$/.test(inputDate)) {
                   return inputDate;
               }
-          
-              // Date オブジェクトに変換して YYYY/MM/DD フォーマットに変換
               var date = new Date(inputDate);
               if (isNaN(date)) {
-                  return inputDate; // 無効な日付の場合
+                  return inputDate;
               }
-          
               return date.getFullYear() + '/' +
                      String(date.getMonth() + 1).padStart(2, '0') + '/' +
                      String(date.getDate()).padStart(2, '0');
           }
-          
-          // 日付をフォーマットしてセルに設定
-          dateCell.textContent = formatDate(item.date);
+          dateCell.textContent = formatDate(item.header1);
 
+          // キャプションセルの処理
           var captionCell = document.createElement('td');
-          captionCell.textContent = item.caption;
+          captionCell.textContent = item.header2;
 
+          // リンクセルの処理
           var linkCell = document.createElement('td');
-          if (item.link) {
+          if (item.header3) {
             var link = document.createElement('a');
-            link.href = item.link;
+            link.href = item.header3; // 修正
             link.textContent = '詳細';
+            link.target = '_blank'; // 新しいタブで開く
             linkCell.appendChild(link);
+          } else {
+            linkCell.textContent = 'N/A'; // 空リンクの場合
           }
 
           row.appendChild(dateCell);
@@ -64,8 +68,16 @@
 
           tbody.appendChild(row);
         });
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        var errorRow = document.createElement('tr');
+        var errorCell = document.createElement('td');
+        errorCell.colSpan = 3;
+        errorCell.textContent = 'データの取得に失敗しました。';
+        errorRow.appendChild(errorCell);
+        document.querySelector('#data-table tbody').appendChild(errorRow);
       });
-
   </script>
 </body>
 </html>
