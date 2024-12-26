@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Spreadsheet Data</title>
+</head>
+<body>
+  <table id="data-table" border="1">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Caption</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch('https://script.google.com/macros/s/AKfycbzbDcXtE6AsLSeGUlxlSEF08oa8bf4gVuJOLDweRqXIjF1Azjhv5RnGsWS0uct6CiTG/exec')
+      .then(response => response.json())
+      .then(data => {
+        var dataTable = document.getElementById('data-table');
+        var tbody = dataTable.querySelector('tbody');
+
+        data.forEach(function(item) {
+          var row = document.createElement('tr');
+
+          var dateCell = document.createElement('td');
+          // フォーマットを判定して正規化する関数
+          function formatDate(inputDate) {
+              // YYYY/MM/DD フォーマットの場合はそのまま返す
+              if (/^\d{4}\/\d{2}\/\d{2}$/.test(inputDate)) {
+                  return inputDate;
+              }
+          
+              // Date オブジェクトに変換して YYYY/MM/DD フォーマットに変換
+              var date = new Date(inputDate);
+              if (isNaN(date)) {
+                  return inputDate; // 無効な日付の場合
+              }
+          
+              return date.getFullYear() + '/' +
+                     String(date.getMonth() + 1).padStart(2, '0') + '/' +
+                     String(date.getDate()).padStart(2, '0');
+          }
+          
+          // 日付をフォーマットしてセルに設定
+          dateCell.textContent = formatDate(item.header1);
+
+          var captionCell = document.createElement('td');
+          captionCell.textContent = item.header2;
+
+          var linkCell = document.createElement('td');
+          if (item.header3) {
+            var link = document.createElement('a');
+            link.href = item.header3;
+            link.textContent = '詳細';
+            linkCell.appendChild(link);
+          }
+
+          row.appendChild(dateCell);
+          row.appendChild(captionCell);
+          row.appendChild(linkCell);
+
+          tbody.appendChild(row);
+        });
+      });
+
+  </script>
+</body>
+</html>
