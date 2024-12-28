@@ -58,8 +58,9 @@
           var linkCell = document.createElement('td');
           if (item.header3) {
             var link = document.createElement('a');
-            link.href =  = item.header3+' target="_blank"';
+            link.href =  = item.header3;
             link.textContent = '詳細';
+            link.target = '_blank'; // 別タブで開く設定を追加
             linkCell.appendChild(link);
           }
 
